@@ -76,18 +76,20 @@ class DotGenerator:
         self.classes[aClass.fqn] = aClass
 
     def _genFields(self, fields):
-        ret = "<BR/>\n".join([field.html() for field in fields])
+        ret = "<BR/>\n\t\t\t\t\t".join([field.html() for field in fields])
         return ret
 
     def _genMethods(self, methods):
-        ret = "<BR/>\n".join([method.html() for method in methods])
+        ret = "<BR/>\n\t\t\t\t\t".join([method.html() for method in methods])
         return ret
 
     def _genClass(self, aClass, withPublicMembers=False, withProtectedMembers=False, withPrivateMembers=False):
-        c = "  " + (aClass.getId()+" [ \n" +
-            "    label = <\n" +
-            "      <TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n" +
-            "        <TR><TD>" + cgi.escape(aClass.fqn) + "</TD></TR>\n")
+        # Tabs are used because the space characters are preserved in the output and
+        # this alignment is only to make the dot file itself readable.
+        c = "\t" + (aClass.getId()+" [ \n" +
+            "\t\tlabel = <\n" +
+            "\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n" +
+            "\t\t\t\t<TR><TD>" + cgi.escape(aClass.fqn) + "</TD></TR>\n")
 
         if withPublicMembers:
             pubFields = self._genFields(aClass.fields[public])
@@ -113,9 +115,11 @@ class DotGenerator:
         fields = "<BR/>".join([pubFields, protFields, privateFields])
         methods = "<BR/>".join([pubMethods, protMethods, privateMethods])
 
-        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + fields + "</TD></TR>\n"
-        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + methods + "</TD></TR>\n"
-        c += "      </TABLE>> ]\n"
+        c += "\t\t\t\t<TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">\n\t\t\t\t\t" + \
+            fields + "\n\t\t\t\t</TD></TR>\n"
+        c += "\t\t\t\t<TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">\n\t\t\t\t\t" + \
+            methods + "\n\t\t\t\t</TD></TR>\n"
+        c += "\t\t\t</TABLE>> ]\n"
         return c
 
     def _genAssociations(self, aClass):
