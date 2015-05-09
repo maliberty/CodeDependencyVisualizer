@@ -110,8 +110,11 @@ class DotGenerator:
             privateFields = ''
             privateMethods = ''
 
-        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + pubFields + protFields + privateFields + "</TD></TR>\n"
-        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + pubMethods + protMethods + privateMethods + "</TD></TR>\n"
+        fields = "<BR/>".join([pubFields, protFields, privateFields])
+        methods = "<BR/>".join([pubMethods, protMethods, privateMethods])
+
+        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + fields + "</TD></TR>\n"
+        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + methods + "</TD></TR>\n"
         c += "      </TABLE>> ]\n"
         return c
 
