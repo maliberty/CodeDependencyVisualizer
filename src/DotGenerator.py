@@ -75,14 +75,11 @@ class DotGenerator:
 
     def _genAssociations(self, aClass):
         edges = set()
-        for fieldName, fieldType in aClass.privateFields:
-            if fieldType in self.classes:
-                c = self.classes[fieldType]
-                edges.add(aClass.getId() + "->" + c.getId())
-        for fieldName, fieldType in aClass.publicFields:
-            if fieldType in self.classes:
-                c = self.classes[fieldType]
-                edges.add(aClass.getId() + "->" + c.getId())
+        for access in ['privateFields', 'protectedFields', 'publicFields']:
+            for fieldName, fieldType in getattr(aClass, access):
+                if fieldType in self.classes:
+                    c = self.classes[fieldType]
+                    edges.add(aClass.getId() + "->" + c.getId())
         edgesJoined = "\n".join(edges)
         return edgesJoined+"\n" if edgesJoined != "" else ""
 
