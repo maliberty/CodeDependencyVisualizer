@@ -47,23 +47,26 @@ class DotGenerator:
         if withPublicMembers:
             pubFields = self._genFields('+ ', aClass.publicFields)
             pubMethods = self._genMethods('+ ', aClass.publicMethods)
-
-            if len(pubFields) != 0 or len(pubMethods) != 0:
-                c += "|" + pubFields + pubMethods
+        else:
+            pubFields = ''
+            pubMethods = ''
 
         if withProtectedMembers:
             protFields = self._genFields('# ', aClass.protectedFields)
             protMethods = self._genMethods('# ', aClass.protectedMethods)
-
-            if len(protFields) != 0 or len(protMethods) != 0:
-                c += "|" + protFields + protMethods
+        else:
+            protFields = ''
+            protMethods = ''
 
         if withPrivateMembers:
             privateFields = self._genFields('- ', aClass.privateFields)
             privateMethods = self._genMethods('- ', aClass.privateMethods)
+        else:
+            privateFields = ''
+            privateMethods = ''
 
-            if len(privateFields) != 0 or len(privateMethods) != 0:
-                c += "|" + privateFields + privateMethods
+        c += "|" + pubFields + protFields + privateFields
+        c += "|" + pubMethods + protMethods + privateMethods
 
         c += "}\"  ]\n"
         c = c.replace('<', '\\<')
