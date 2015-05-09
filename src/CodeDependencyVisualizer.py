@@ -85,6 +85,9 @@ def processClassMemberDeclaration(umlClass, cursor):
 
 def processClass(cursor, inclusionConfig):
     """ Processes an ast node that is a class. """
+    if not cursor.is_definition():
+        return
+
     umlClass = UmlClass()  # umlClass is the datastructure for the DotGenerator
                            # that stores the necessary information about a single class.
                            # We extract this information from the clang ast hereafter ...
