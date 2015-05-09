@@ -1,6 +1,6 @@
 import hashlib
 import logging
-
+import cgi
 
 class UmlClass:
     def __init__(self):
@@ -34,15 +34,18 @@ class DotGenerator:
         self.classes[aClass.fqn] = aClass
 
     def _genFields(self, accessPrefix, fields):
-        ret = "".join([(accessPrefix + fieldName + ": " + fieldType + "\l") for fieldName, fieldType in fields])
+        ret = "<BR/>\n".join([cgi.escape(accessPrefix + fieldName + ": " + fieldType) for fieldName, fieldType in fields])
         return ret
 
     def _genMethods(self, accessPrefix, methods):
-        return "".join([(accessPrefix + methodName + methodArgs + " : " + returnType + "\l") for (returnType, methodName, methodArgs) in methods])
+        ret = "<BR/>\n".join([cgi.escape(accessPrefix + methodName + methodArgs + " : " + returnType) for (returnType, methodName, methodArgs) in methods])
+        return ret
 
     def _genClass(self, aClass, withPublicMembers=False, withProtectedMembers=False, withPrivateMembers=False):
-        c = (aClass.getId()+" [ \n" +
-             "   label = \"{" + aClass.fqn)
+        c = "  " + (aClass.getId()+" [ \n" +
+            "    label = <\n" +
+            "      <TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n" +
+            "        <TR><TD>" + cgi.escape(aClass.fqn) + "</TD></TR>\n")
 
         if withPublicMembers:
             pubFields = self._genFields('+ ', aClass.publicFields)
@@ -65,12 +68,9 @@ class DotGenerator:
             privateFields = ''
             privateMethods = ''
 
-        c += "|" + pubFields + protFields + privateFields
-        c += "|" + pubMethods + protMethods + privateMethods
-
-        c += "}\"  ]\n"
-        c = c.replace('<', '\\<')
-        c = c.replace('>', '\\>')
+        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + pubFields + protFields + privateFields + "</TD></TR>\n"
+        c += "        <TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">" + pubMethods + protMethods + privateMethods + "</TD></TR>\n"
+        c += "      </TABLE>> ]\n"
         return c
 
     def _genAssociations(self, aClass):
@@ -113,7 +113,7 @@ class DotGenerator:
                       "  node [" +
                       "    fontname = \"Bitstream Vera Sans\"\n" +
                       "    fontsize = 8\n" +
-                      "    shape = \"record\"\n" +
+                      "    shape = \"none\"\n" +
                       "  ]\n" +
                       "  edge [\n" +
                       "    fontname = \"Bitstream Vera Sans\"\n" +
