@@ -158,9 +158,11 @@ if __name__ == "__main__":
     subdirectories = [x[0] for x in os.walk(args['d'])]
 
     loggingFormat = "%(levelname)s - %(module)s: %(message)s"
-    logging.basicConfig(format=loggingFormat, level=logging.INFO)
+    loggingLevel = logging.INFO
     if args['verbose']:
-        logging.basicConfig(format=loggingFormat, level=logging.DEBUG)
+        loggingLevel = logging.DEBUG
+    logging.basicConfig(format=loggingFormat, level=loggingLevel)
+
 
     logging.info("found " + str(len(filesToParse)) + " source files.")
 
