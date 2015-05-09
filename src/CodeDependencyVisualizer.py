@@ -40,6 +40,14 @@ def processClassField(cursor):
     name = cursor.spelling
     return name, type
 
+def getAccessFromClang(access_specifier):
+    if access_specifier is clang.cindex.AccessSpecifier.PUBLIC:
+        return public
+    elif access_specifier is clang.cindex.AccessSpecifier.PRIVATE:
+        return protected
+    elif access_specifier is clang.cindex.AccessSpecifier.PROTECTED:
+        return private
+    raise Exception('Unknown clang access_specifier %s' % access_specifier)
 
 def processClassMemberDeclaration(umlClass, cursor):
     """ Processes a cursor corresponding to a class member declaration and
@@ -56,32 +64,19 @@ def processClassMemberDeclaration(umlClass, cursor):
             # clang < 3.5: needs patched cindex.py to have
             # clang.cindex.AccessSpecifier available:
             # https://gitorious.org/clang-mirror/clang-mirror/commit/e3d4e7c9a45ed9ad4645e4dc9f4d3b4109389cb7
-            if cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC:
-                umlClass.publicFields.append((name, type))
-            elif cursor.access_specifier == clang.cindex.AccessSpecifier.PRIVATE:
-                umlClass.privateFields.append((name, type))
-            elif cursor.access_specifier == clang.cindex.AccessSpecifier.PROTECTED:
-                umlClass.protectedFields.append((name, type))
+            access = getAccessFromClang(cursor.access_specifier)
+            umlClass.addField(name, type, access)
     elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD:
         try:
             returnType, argumentTypes = cursor.type.spelling.split(' ', 1)
-            if cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC:
-                umlClass.publicMethods.append((returnType, cursor.spelling, argumentTypes))
-            elif cursor.access_specifier == clang.cindex.AccessSpecifier.PRIVATE:
-                umlClass.privateMethods.append((returnType, cursor.spelling, argumentTypes))
-            elif cursor.access_specifier == clang.cindex.AccessSpecifier.PROTECTED:
-                umlClass.protectedMethods.append((returnType, cursor.spelling, argumentTypes))
+            access = getAccessFromClang(cursor.access_specifier)
+            umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access)
         except:
             logging.error("Invalid CXX_METHOD declaration! " + str(cursor.type.spelling))
     elif cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE:
         returnType, argumentTypes = cursor.type.spelling.split(' ', 1)
-        if cursor.access_specifier == clang.cindex.AccessSpecifier.PUBLIC:
-            umlClass.publicMethods.append((returnType, cursor.spelling, argumentTypes))
-        elif cursor.access_specifier == clang.cindex.AccessSpecifier.PRIVATE:
-            umlClass.privateMethods.append((returnType, cursor.spelling, argumentTypes))
-        elif cursor.access_specifier == clang.cindex.AccessSpecifier.PROTECTED:
-            umlClass.protectedMethods.append((returnType, cursor.spelling, argumentTypes))
-
+        access = getAccessFromClang(cursor.access_specifier)
+        umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access)
 
 def processClass(cursor, inclusionConfig):
     """ Processes an ast node that is a class. """

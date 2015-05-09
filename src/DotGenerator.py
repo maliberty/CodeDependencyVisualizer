@@ -2,16 +2,58 @@ import hashlib
 import logging
 import cgi
 
+class UmlAccess:
+    def __init__(self, name, symbol):
+        self.name = name
+        self.symbol = symbol
+
+
+public = UmlAccess('public', '+')
+protected = UmlAccess('protected', '#')
+private = UmlAccess('private', '-')
+
+
+class UmlField:
+    def __init__(self, name, type, access):
+        self.name = name
+        self.type = type
+        self.access = access
+
+    def html(self):
+        return cgi.escape(self.access.symbol + ' ' + self.name + ": " + self.type)
+
+
+class UmlMethod:
+    def __init__(self, returnType, name, argumentTypes, access):
+        self.returnType = returnType
+        self.name = name
+        self.argumentTypes = argumentTypes
+        self.access = access
+
+    def html(self):
+        return cgi.escape(self.access.symbol + ' ' + self.name + self.argumentTypes + " : " + self.returnType)
+
+
 class UmlClass:
     def __init__(self):
         self.fqn = None
         self.parents = []
-        self.privateFields = []
-        self.privateMethods = []
-        self.publicFields = []
-        self.publicMethods = []
-        self.protectedFields = []
-        self.protectedMethods = []
+
+        self.fields = {}
+        self.fields[public] = []
+        self.fields[protected] = []
+        self.fields[private] = []
+
+        self.methods = {}
+        self.methods[public] = []
+        self.methods[protected] = []
+        self.methods[private] = []
+
+    def addField(self, name, type, access):
+        self.fields[access].append(UmlField(name, type, access))
+
+    def addMethod(self, returnType, name, argumentTypes, access):
+        self.methods[access].append(UmlMethod(returnType, name, argumentTypes, access))
 
     def addParentByFQN(self, fullyQualifiedClassName):
         self.parents.append(fullyQualifiedClassName)
@@ -33,12 +75,12 @@ class DotGenerator:
     def addClass(self, aClass):
         self.classes[aClass.fqn] = aClass
 
-    def _genFields(self, accessPrefix, fields):
-        ret = "<BR/>\n".join([cgi.escape(accessPrefix + fieldName + ": " + fieldType) for fieldName, fieldType in fields])
+    def _genFields(self, fields):
+        ret = "<BR/>\n".join([field.html() for field in fields])
         return ret
 
-    def _genMethods(self, accessPrefix, methods):
-        ret = "<BR/>\n".join([cgi.escape(accessPrefix + methodName + methodArgs + " : " + returnType) for (returnType, methodName, methodArgs) in methods])
+    def _genMethods(self, methods):
+        ret = "<BR/>\n".join([method.html() for method in methods])
         return ret
 
     def _genClass(self, aClass, withPublicMembers=False, withProtectedMembers=False, withPrivateMembers=False):
@@ -48,22 +90,22 @@ class DotGenerator:
             "        <TR><TD>" + cgi.escape(aClass.fqn) + "</TD></TR>\n")
 
         if withPublicMembers:
-            pubFields = self._genFields('+ ', aClass.publicFields)
-            pubMethods = self._genMethods('+ ', aClass.publicMethods)
+            pubFields = self._genFields(aClass.fields[public])
+            pubMethods = self._genMethods(aClass.methods[public])
         else:
             pubFields = ''
             pubMethods = ''
 
         if withProtectedMembers:
-            protFields = self._genFields('# ', aClass.protectedFields)
-            protMethods = self._genMethods('# ', aClass.protectedMethods)
+            protFields = self._genFields(aClass.fields[protected])
+            protMethods = self._genMethods(aClass.methods[protected])
         else:
             protFields = ''
             protMethods = ''
 
         if withPrivateMembers:
-            privateFields = self._genFields('- ', aClass.privateFields)
-            privateMethods = self._genMethods('- ', aClass.privateMethods)
+            privateFields = self._genFields(aClass.fields[private])
+            privateMethods = self._genMethods(aClass.methods[private])
         else:
             privateFields = ''
             privateMethods = ''
@@ -75,10 +117,10 @@ class DotGenerator:
 
     def _genAssociations(self, aClass):
         edges = set()
-        for access in ['privateFields', 'protectedFields', 'publicFields']:
-            for fieldName, fieldType in getattr(aClass, access):
-                if fieldType in self.classes:
-                    c = self.classes[fieldType]
+        for access, fields in aClass.fields.iteritems():
+            for field in fields:
+                if field.type in self.classes:
+                    c = self.classes[field.type]
                     edges.add(aClass.getId() + "->" + c.getId())
         edgesJoined = "\n".join(edges)
         return edgesJoined+"\n" if edgesJoined != "" else ""
