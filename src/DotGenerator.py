@@ -14,24 +14,32 @@ private = UmlAccess('private', '-')
 
 
 class UmlField:
-    def __init__(self, name, type, access):
+    def __init__(self, name, type, access, static):
         self.name = name
         self.type = type
         self.access = access
+        self.static = static
 
     def html(self):
-        return cgi.escape(self.access.symbol + ' ' + self.name + ": " + self.type)
+        ret = cgi.escape(self.access.symbol + ' ' + self.name + ": " + self.type)
+        if self.static:
+            ret = '<U>' + ret + '</U>'
+        return ret
 
 
 class UmlMethod:
-    def __init__(self, returnType, name, argumentTypes, access):
+    def __init__(self, returnType, name, argumentTypes, access, static):
         self.returnType = returnType
         self.name = name
         self.argumentTypes = argumentTypes
         self.access = access
+        self.static = static
 
     def html(self):
-        return cgi.escape(self.access.symbol + ' ' + self.name + self.argumentTypes + " : " + self.returnType)
+        ret = cgi.escape(self.access.symbol + ' ' + self.name + self.argumentTypes + " : " + self.returnType)
+        if self.static:
+            ret = '<U>' + ret + '</U>'
+        return ret
 
 
 class UmlClass:
@@ -49,11 +57,12 @@ class UmlClass:
         self.methods[protected] = []
         self.methods[private] = []
 
-    def addField(self, name, type, access):
-        self.fields[access].append(UmlField(name, type, access))
+    def addField(self, name, type, access, static=False):
+        self.fields[access].append(UmlField(name, type, access, static))
 
-    def addMethod(self, returnType, name, argumentTypes, access):
-        self.methods[access].append(UmlMethod(returnType, name, argumentTypes, access))
+    def addMethod(self, returnType, name, argumentTypes, access, static=False):
+        method = UmlMethod(returnType, name, argumentTypes, access, static)
+        self.methods[access].append(method)
 
     def addParentByFQN(self, fullyQualifiedClassName):
         self.parents.append(fullyQualifiedClassName)

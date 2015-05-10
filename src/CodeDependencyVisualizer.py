@@ -58,25 +58,22 @@ def processClassMemberDeclaration(umlClass, cursor):
                 umlClass.parents.append(baseClass.spelling)
             elif baseClass.kind == clang.cindex.CursorKind.TYPE_REF:
                 umlClass.parents.append(baseClass.type.spelling)
-    elif cursor.kind == clang.cindex.CursorKind.FIELD_DECL:  # non static data member
+    elif cursor.kind == clang.cindex.CursorKind.FIELD_DECL or \
+        cursor.kind == clang.cindex.CursorKind.VAR_DECL: # data member
         name, type = processClassField(cursor)
+        static = cursor.kind == clang.cindex.CursorKind.VAR_DECL
         if name is not None and type is not None:
             # clang < 3.5: needs patched cindex.py to have
             # clang.cindex.AccessSpecifier available:
             # https://gitorious.org/clang-mirror/clang-mirror/commit/e3d4e7c9a45ed9ad4645e4dc9f4d3b4109389cb7
             access = getAccessFromClang(cursor.access_specifier)
-            umlClass.addField(name, type, access)
-    elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD:
-        try:
-            returnType, argumentTypes = cursor.type.spelling.split(' ', 1)
-            access = getAccessFromClang(cursor.access_specifier)
-            umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access)
-        except:
-            logging.error("Invalid CXX_METHOD declaration! " + str(cursor.type.spelling))
-    elif cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE:
+            umlClass.addField(name, type, access, static)
+    elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD or cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE:
         returnType, argumentTypes = cursor.type.spelling.split(' ', 1)
         access = getAccessFromClang(cursor.access_specifier)
-        umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access)
+        static = cursor.is_static_method()
+        umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access,
+                           static)
 
 def processClass(cursor, inclusionConfig):
     """ Processes an ast node that is a class. """
