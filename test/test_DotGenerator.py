@@ -3,18 +3,25 @@ from DotGenerator import *
 import sys
 
 dot = DotGenerator()
-
-privateFields=[("aa", "int"),("bb","void*"),("cc","NS1::BClass"),("dd", "void")]
-privateMethods=[("void", "privateMethod1", "(asdds, dss*)"), ("BClass", "privateMethod2", "(asdf)")]
-publicFields=[("publicField1","CClass"), ("publicField2", "none")]
-publicMethods=[("void", "publicMethod1", "(asdds, dss*)"), ("BClass", "publicMethod2", "(asdf)")]
+dot.setDrawInheritances(True)
+dot.setDrawAssociations(True)
+dot.setShowPrivMethods(True)
+dot.setShowProtMethods(True)
+dot.setShowPubMethods(True)
 
 c1 = UmlClass()
 c1.fqn = "NS1::AClass"
-c1.privateFields = privateFields
-c1.privateMethods = privateMethods
-c1.publicFields = publicFields
-c1.publicMethods = publicMethods
+c1.addField("aa", "int", private)
+c1.addField("bb", "void*", private)
+c1.addField("cc", "NS1::BClass", private)
+c1.addField("dd", "void", private)
+c1.addField("publicField1", "CClass", public)
+c1.addField("publicField2", "none", public)
+
+c1.addMethod("void", "privateMethod1", "(asdds, dss*)", private)
+c1.addMethod("BClass", "privateMethod2", "(asdf)", private)
+c1.addMethod("void", "publicMethod1", "(asdds, dss*)", public)
+c1.addMethod("BClass", "publicMethod2", "(asdf)", public)
 dot.addClass(c1)
 
 c2 = UmlClass()
