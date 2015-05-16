@@ -21,6 +21,8 @@ class B : public A, C /* asdf */ {
     char c;
     D d1;
     T varT;
+    static int stMem;
+    static int *stFun();
 
     NSXX::NSX::C aprivateMethod(int a /*acomment*/, int b);
     float aprivateMethod();

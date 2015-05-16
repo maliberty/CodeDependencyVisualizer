@@ -63,13 +63,12 @@ def processClassMemberDeclaration(umlClass, cursor):
         name, type = processClassField(cursor)
         static = cursor.kind == clang.cindex.CursorKind.VAR_DECL
         if name is not None and type is not None:
-            # clang < 3.5: needs patched cindex.py to have
-            # clang.cindex.AccessSpecifier available:
-            # https://gitorious.org/clang-mirror/clang-mirror/commit/e3d4e7c9a45ed9ad4645e4dc9f4d3b4109389cb7
             access = getAccessFromClang(cursor.access_specifier)
             umlClass.addField(name, type, access, static)
-    elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD or cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE:
-        returnType, argumentTypes = cursor.type.spelling.split(' ', 1)
+    elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD \
+           or cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE:
+        returnType = cursor.type.get_result().spelling
+        argumentTypes = cursor.type.spelling[len(returnType):].lstrip()
         access = getAccessFromClang(cursor.access_specifier)
         static = cursor.is_static_method()
         umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access,
@@ -113,8 +112,6 @@ def traverseAst(cursor, inclusionConfig):
     if (cursor.kind == clang.cindex.CursorKind.CLASS_DECL
             or cursor.kind == clang.cindex.CursorKind.STRUCT_DECL
             or cursor.kind == clang.cindex.CursorKind.CLASS_TEMPLATE):
-        # if the current cursor is a class, class template or struct declaration,
-        # we process it further ...
         processClass(cursor, inclusionConfig)
     for child_node in cursor.get_children():
         traverseAst(child_node, inclusionConfig)
