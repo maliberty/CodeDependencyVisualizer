@@ -66,9 +66,14 @@ def processClassMemberDeclaration(umlClass, cursor):
             access = getAccessFromClang(cursor.access_specifier)
             umlClass.addField(name, type, access, static)
     elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD \
-           or cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE:
+           or cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE \
+           or cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR \
+           or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
         returnType = cursor.type.get_result().spelling
         argumentTypes = cursor.type.spelling[len(returnType):].lstrip()
+        if cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR \
+               or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
+            returnType = ''
         access = getAccessFromClang(cursor.access_specifier)
         static = cursor.is_static_method()
         umlClass.addMethod(returnType, cursor.spelling, argumentTypes, access,

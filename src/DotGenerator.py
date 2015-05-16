@@ -36,7 +36,10 @@ class UmlMethod:
         self.static = static
 
     def html(self):
-        ret = cgi.escape(self.access.symbol + ' ' + self.name + self.argumentTypes + " : " + self.returnType)
+        ret = self.access.symbol + ' ' + self.name + self.argumentTypes
+        if self.returnType:
+            ret += " : " + self.returnType
+        ret = cgi.escape(ret)
         if self.static:
             ret = '<U>' + ret + '</U>'
         return ret

@@ -12,6 +12,8 @@ using namespace NSXX::NSX;
 
 
 class A {
+    A();
+    ~A();
 };
 
 template<typename T>
