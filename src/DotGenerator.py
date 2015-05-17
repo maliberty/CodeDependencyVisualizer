@@ -14,14 +14,18 @@ private = UmlAccess('private', '-')
 
 
 class UmlField:
-    def __init__(self, name, type, access, static):
+    def __init__(self, name, type, canonicalType, access, static):
         self.name = name
         self.type = type
         self.access = access
+        self.canonicalType = canonicalType
         self.static = static
 
     def html(self):
-        ret = cgi.escape(self.access.symbol + ' ' + self.name + ": " + self.type)
+        ret = self.access.symbol + ' ' + self.name + ": " + self.type
+        #if self.type != self.canonicalType:
+        #    ret += " // canonicalType: " + self.canonicalType
+        ret = cgi.escape(ret)
         if self.static:
             ret = '<U>' + ret + '</U>'
         return ret
@@ -60,8 +64,8 @@ class UmlClass:
         self.methods[protected] = []
         self.methods[private] = []
 
-    def addField(self, name, type, access, static=False):
-        self.fields[access].append(UmlField(name, type, access, static))
+    def addField(self, name, type, canonicalType, access, static=False):
+        self.fields[access].append(UmlField(name, type, canonicalType, access, static))
 
     def addMethod(self, returnType, name, argumentTypes, access, static=False):
         method = UmlMethod(returnType, name, argumentTypes, access, static)
@@ -138,8 +142,8 @@ class DotGenerator:
         edges = set()
         for access, fields in aClass.fields.iteritems():
             for field in fields:
-                if field.type in self.classes:
-                    c = self.classes[field.type]
+                if field.canonicalType in self.classes:
+                    c = self.classes[field.canonicalType]
                     edges.add(aClass.getId() + "->" + c.getId())
         edgesJoined = "\n".join(edges)
         return edgesJoined+"\n" if edgesJoined != "" else ""

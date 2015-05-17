@@ -38,7 +38,8 @@ def processClassField(cursor):
             elif cc.kind == clang.cindex.CursorKind.TYPE_REF:
                 type = cursor.type.spelling
     name = cursor.spelling
-    return name, type
+    canonicalType = cursor.type.get_canonical().spelling
+    return name, type, canonicalType
 
 def getAccessFromClang(access_specifier):
     if access_specifier is clang.cindex.AccessSpecifier.PUBLIC:
@@ -48,6 +49,10 @@ def getAccessFromClang(access_specifier):
     elif access_specifier is clang.cindex.AccessSpecifier.PROTECTED:
         return private
     raise Exception('Unknown clang access_specifier %s' % access_specifier)
+
+def isCtorDtor(cursor):
+    return cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR \
+            or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR
 
 def processClassMemberDeclaration(umlClass, cursor):
     """ Processes a cursor corresponding to a class member declaration and
@@ -60,19 +65,17 @@ def processClassMemberDeclaration(umlClass, cursor):
                 umlClass.parents.append(baseClass.type.spelling)
     elif cursor.kind == clang.cindex.CursorKind.FIELD_DECL or \
         cursor.kind == clang.cindex.CursorKind.VAR_DECL: # data member
-        name, type = processClassField(cursor)
+        name, type, canonicalType = processClassField(cursor)
         static = cursor.kind == clang.cindex.CursorKind.VAR_DECL
         if name is not None and type is not None:
             access = getAccessFromClang(cursor.access_specifier)
-            umlClass.addField(name, type, access, static)
+            umlClass.addField(name, type, canonicalType, access, static)
     elif cursor.kind == clang.cindex.CursorKind.CXX_METHOD \
            or cursor.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE \
-           or cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR \
-           or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
+           or isCtorDtor(cursor):
         returnType = cursor.type.get_result().spelling
         argumentTypes = cursor.type.spelling[len(returnType):].lstrip()
-        if cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR \
-               or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
+        if isCtorDtor(cursor):
             returnType = ''
         access = getAccessFromClang(cursor.access_specifier)
         static = cursor.is_static_method()

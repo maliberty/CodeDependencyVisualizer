@@ -10,11 +10,15 @@ template<typename T>
 class G {
 };
 
+class J {};
+typedef J JJ;
+
 class H : public X, C, A, public G<int>{
   private:
     const NSXX::NSX::C *m;
     char c;
     F<int> d1;
+    JJ j;
 
   public:
     T x;
@@ -23,7 +27,7 @@ class H : public X, C, A, public G<int>{
   protected:
     int y;
     const NSXX::NSX::C *n;
-    
+
     void aProtectedMethod();
 };
 
