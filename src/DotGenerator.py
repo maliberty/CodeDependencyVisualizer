@@ -12,6 +12,17 @@ public = UmlAccess('public', '+')
 protected = UmlAccess('protected', '#')
 private = UmlAccess('private', '-')
 
+def joinNonNull(sep, items):
+    ret = ''
+    first = True
+    for item in items:
+        if len(item) > 0:
+            if first:
+                first = False
+            else:
+                ret += '<BR/>'
+            ret += item
+    return ret
 
 class UmlField:
     def __init__(self, name, type, canonicalType, access, static):
@@ -84,6 +95,7 @@ class DotGenerator:
     _showPubMembers = False
     _drawAssociations = False
     _drawInheritances = False
+    _sep = "<BR/>\n\t\t\t\t\t"
 
     def __init__(self):
         self.classes = {}
@@ -92,11 +104,11 @@ class DotGenerator:
         self.classes[aClass.fqn] = aClass
 
     def _genFields(self, fields):
-        ret = "<BR/>\n\t\t\t\t\t".join([field.html() for field in fields])
+        ret = self._sep.join([field.html() for field in fields])
         return ret
 
     def _genMethods(self, methods):
-        ret = "<BR/>\n\t\t\t\t\t".join([method.html() for method in methods])
+        ret = self._sep.join([method.html() for method in methods])
         return ret
 
     def _genClass(self, aClass, withPublicMembers=False, withProtectedMembers=False, withPrivateMembers=False):
@@ -128,8 +140,8 @@ class DotGenerator:
             privateFields = ''
             privateMethods = ''
 
-        fields = "<BR/>".join([pubFields, protFields, privateFields])
-        methods = "<BR/>".join([pubMethods, protMethods, privateMethods])
+        fields = joinNonNull(self._sep, [pubFields, protFields, privateFields])
+        methods = joinNonNull(self._sep, [pubMethods, protMethods, privateMethods])
 
         c += "\t\t\t\t<TR><TD ALIGN=\"LEFT\" BALIGN=\"LEFT\">\n\t\t\t\t\t" + \
             fields + "\n\t\t\t\t</TD></TR>\n"
