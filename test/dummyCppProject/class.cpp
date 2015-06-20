@@ -13,12 +13,15 @@ class G {
 class J {};
 typedef J JJ;
 
+class K {};
+
 class H : public X, C, A, public G<int>{
   private:
     const NSXX::NSX::C *m;
     char c;
     F<int> d1;
     JJ j;
+    K k[3];
 
   public:
     T x;

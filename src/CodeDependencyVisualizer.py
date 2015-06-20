@@ -39,6 +39,9 @@ def processClassField(cursor):
                 type = cursor.type.spelling
     name = cursor.spelling
     canonicalType = cursor.type.get_canonical().spelling
+    if cursor.type.kind == clang.cindex.TypeKind.CONSTANTARRAY:
+        canonicalType = cursor.type.get_array_element_type().spelling
+
     return name, type, canonicalType
 
 def getAccessFromClang(access_specifier):
