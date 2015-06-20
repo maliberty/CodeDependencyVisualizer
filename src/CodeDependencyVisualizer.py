@@ -87,6 +87,11 @@ def processClass(cursor, inclusionConfig):
     if not cursor.is_definition():
         return
 
+    import re
+    if (inclusionConfig['excludeDirs'] and
+            re.match(inclusionConfig['excludeDirs'], cursor.location.file.name)):
+        return
+
     umlClass = UmlClass()  # umlClass is the datastructure for the DotGenerator
                            # that stores the necessary information about a single class.
                            # We extract this information from the clang ast hereafter ...
@@ -100,7 +105,6 @@ def processClass(cursor, inclusionConfig):
         #   struct MyStruct ...
         umlClass.fqn = cursor.type.spelling  # the fully qualified name
 
-    import re
     if (inclusionConfig['excludeClasses'] and
             re.match(inclusionConfig['excludeClasses'], umlClass.fqn)):
         return
@@ -148,6 +152,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--verbose', action="store_true", help="print verbose information for debugging purposes")
     parser.add_argument('--excludeClasses', help="classes matching this pattern will be excluded")
     parser.add_argument('--includeClasses', help="only classes matching this pattern will be included")
+    parser.add_argument('--excludeDirs', help="classes in directories matching this pattern will be excluded")
 
     args = vars(parser.parse_args(sys.argv[1:]))
 
@@ -170,7 +175,8 @@ if __name__ == "__main__":
         logging.info("parsing file " + sourceFile)
         parseTranslationUnit(sourceFile, args['includeDirs'], {
             'excludeClasses': args['excludeClasses'],
-            'includeClasses': args['includeClasses']})
+            'includeClasses': args['includeClasses'],
+            'excludeDirs': args['excludeDirs']})
 
     dotGenerator.setDrawAssociations(args['associations'])
     dotGenerator.setDrawInheritances(args['inheritances'])
